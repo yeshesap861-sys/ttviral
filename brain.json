@@ -1,5 +1,8 @@
 {
-  "learned_videos": [],
-  "high_score_tags": {},
-  "total_comments": 0
+    "learned_videos": [
+        "7345678901234567890",
+        "7356789012345678901"
+    ],
+    "high_score_tags": {},
+    "total_comments": 2
 }
