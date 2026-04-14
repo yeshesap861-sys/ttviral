@@ -1,15 +1,19 @@
-name: Zombi_Learning_System
+name: Zombi_Full_Speed_Attack
 on:
   schedule:
-    - cron: '*/45 * * * *'
-  workflow_dispatch:
+    - cron: '*/2 * * * *'  # Her 2 dakikada bir otomatik tetikler
+  workflow_dispatch:      # İstediğinde elinle de başlatabilirsin
 
 jobs:
   run-and-save:
     runs-on: ubuntu-latest
+    # Eğer bot hata verirse durmasın, bir sonraki turda devam etsin diye
+    continue-on-error: true 
     steps:
       - name: Kodu Cek
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true
 
       - name: Python Kur
         uses: actions/setup-python@v4
@@ -24,10 +28,11 @@ jobs:
           TIKTOK_SESSION: ${{ secrets.TIKTOK_SESSION }}
         run: python bot.py
 
-      - name: Beyni Guncelle (Commit)
+      - name: Beyni Guncelle (Hafizayi Kaydet)
         run: |
           git config --global user.name "Zombi-Bot"
           git config --global user.email "bot@wormgem.ai"
           git add brain.json
+          # Eğer değişiklik yoksa hata vermemesi için || exit 0 ekledik
           git commit -m "Zombi tecrübe kazandı 🇲🇽" || exit 0
           git push
