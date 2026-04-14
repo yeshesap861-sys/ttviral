@@ -13,67 +13,70 @@ def save_brain(brain):
     with open('brain.json', 'w', encoding='utf-8') as f:
         json.dump(brain, f, indent=4, ensure_ascii=False)
 
-def smart_scan():
-    """TikTok kapısı kapalıysa, arka kapıdan (arama trendlerinden) sızar"""
-    print("📡 Smart Scan başlatıldı... Hedefler taranıyor.")
+def get_mobile_foryou():
+    """Botu iPhone gibi gösterip gerçek keşfete sızar"""
+    print("📱 iPhone 15 Modu: Keşfet akışına sızılıyor...")
+    
+    # Gerçek bir mobil cihazın gönderdiği başlıklar
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'tr-TR,tr;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
     }
-    
-    # Trend aramaları ve keşfet etiketleri karması
-    search_terms = ["komik", "trend", "keşfet", "vlog", "turkiye"]
-    term = random.choice(search_terms)
-    
-    # TikTok'un arama sonuçlarından video ID'lerini ayıklıyoruz
-    url = f"https://www.tiktok.com/api/search/item/full/?keyword={term}&offset=0&count=10"
-    
-    try:
-        r = requests.get(url, headers=headers, timeout=15)
-        # ID'leri yakalamak için çok daha agresif bir regex
-        video_ids = re.findall(r'"aweme_id":"(\d+)"', r.text)
-        
-        if not video_ids:
-            # Eğer API vermezse, sayfa kaynağından çekmeyi dene
-            web_url = f"https://www.tiktok.com/search?q={term}"
-            r_web = requests.get(web_url, headers=headers, timeout=15)
-            video_ids = re.findall(r'video/(\d+)', r_web.text)
 
+    try:
+        # Mobil keşfet URL'sini zorluyoruz
+        url = "https://www.tiktok.com/foryou?is_copy_url=1&is_from_webapp=v1"
+        response = requests.get(url, headers=headers, timeout=20)
+        
+        # Sayfa içinden taze video ID'lerini cımbızla al
+        video_ids = re.findall(r'video/(\d{18,20})', response.text)
+        
         if video_ids:
-            unique_ids = list(set(video_ids))
-            print(f"🎯 Smart Scan {len(unique_ids)} tane taze kurban yakaladı!")
-            return unique_ids
-    except:
-        pass
-    
-    print("⚠️ Smart Scan sızamadı, manuel yedekleme listesi kullanılıyor...")
-    return []
+            found = list(set(video_ids))
+            print(f"✅ Mobilden {len(found)} tane canlı video yakalandı!")
+            return found
+        else:
+            print("❌ Mobil kapı da kilitli görünüyor, TikTok GitHub'ı yemiyor.")
+            return []
+    except Exception as e:
+        print(f"💥 Bağlantı hatası: {e}")
+        return []
 
 def attack():
     brain = load_brain()
-    comment_text = "v🇲🇽"
+    comment_text = "be 🇲🇽"
     
-    targets = smart_scan()
+    targets = get_mobile_foryou()
     
-    # Eğer her şey başarısız olursa, havuzdaki son trend ID'lerden birini salla (Boş dönmesin)
     if not targets:
-        # Bunlar gerçek trend videolardan seçilen güncel ID'lerdir
-        targets = ["7419283746501928374", "7351234567890123456"] 
+        print("💀 Hedef bulunamadı. Beklemedeyiz.")
+        return
 
     for vid in targets:
         if vid in brain['learned_videos']:
             continue
             
-        print(f"⚔️ Smart Scan Hedefi: {vid}")
+        print(f"⚔️ iPhone Moduyla Sızılıyor: {vid}")
         
         url = f"https://www.tiktok.com/api/comment/publish/?aweme_id={vid}"
         cookies = {'sessionid': SESSION_ID}
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': f'https://www.tiktok.com/video/{vid}'
+        
+        # Yorum atarken de mobil gibi davranıyoruz
+        attack_headers = {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
+            'Origin': 'https://www.tiktok.com',
+            'Referer': f'https://www.tiktok.com/video/{vid}',
+            'Content-Type': 'application/x-www-form-urlencoded'
         }
         
         try:
-            r = requests.post(url, cookies=cookies, data={'text': comment_text}, headers=headers)
+            r = requests.post(url, cookies=cookies, data={'text': comment_text}, headers=attack_headers)
             if r.status_code == 200:
                 print(f"✅ MEKSİKA BAYRAĞI DİKİLDİ! 🇲🇽")
                 print(f"🔗 LİNK: https://www.tiktok.com/video/{vid}")
@@ -85,12 +88,12 @@ def attack():
             else:
                 print(f"⚠️ Engel: {r.status_code}")
         except:
-            print("💥 Bağlantı hatası.")
+            pass
         
         time.sleep(2)
 
 if __name__ == "__main__":
     if not SESSION_ID:
-        print("🚨 SESSION_ID YOK!")
+        print("🚨 SESSION_ID EKSİK AGA!")
     else:
         attack()
