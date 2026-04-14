@@ -1,11 +1,11 @@
-name: Zombi_Ordusu_TR
+name: Zombi_Learning_System
 on:
   schedule:
-    - cron: '*/45 * * * *' # 45 dakikada bir 'Yalnızım' operasyonu
-  workflow_dispatch: # Manuel çalıştırma butonu
+    - cron: '*/45 * * * *'
+  workflow_dispatch:
 
 jobs:
-  start_attack:
+  run-and-learn:
     runs-on: ubuntu-latest
     steps:
       - name: Kodu Cek
@@ -19,7 +19,15 @@ jobs:
       - name: Kutuphaneleri Yukle
         run: pip install requests
 
-      - name: Zombiyi Sal
+      - name: Zombiyi Calistir
         env:
           TIKTOK_SESSION: ${{ secrets.TIKTOK_SESSION }}
         run: python bot.py
+
+      - name: Hafizayi Guncelle (Learning)
+        run: |
+          git config --global user.name "Zombi-Bot"
+          git config --global user.email "bot@wormgem.ai"
+          git add brain.json
+          git commit -m "Zombi yeni videolar ögrendi 🇲🇽" || exit 0
+          git push
