@@ -1,0 +1,25 @@
+name: Zombi_Ordusu_TR
+on:
+  schedule:
+    - cron: '*/45 * * * *' # 45 dakikada bir 'Yalnızım' operasyonu
+  workflow_dispatch: # Manuel çalıştırma butonu
+
+jobs:
+  start_attack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu Cek
+        uses: actions/checkout@v3
+
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Kutuphaneleri Yukle
+        run: pip install requests
+
+      - name: Zombiyi Sal
+        env:
+          TIKTOK_SESSION: ${{ secrets.TIKTOK_SESSION }}
+        run: python bot.py
